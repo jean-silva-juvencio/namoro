@@ -217,73 +217,42 @@
 </div>
 
 <script>
-    // 🔴 ATENÇÃO: Depois de implantar o Apps Script, cole a URL aqui 🔴
-    // Exemplo: const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxxxx/exec";
-    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/SEU_ID_AQUI/exec";
+    // ✅ SUA URL DO GOOGLE APPS SCRIPTS (já atualizada)
+    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycby4oiEK3UMYb34apO7haRuunzZ18I9QXNqr6bkSkHvK3Gfid80XZZN8nSR5jiholhpUnQ/exec";
     
     const btnSim = document.getElementById('btnSim');
     const btnNao = document.getElementById('btnNao');
     const mensagemDiv = document.getElementById('mensagemFinal');
 
-    // Função para enviar resposta ao Google Sheets
     async function enviarResposta(resposta, mensagem) {
         try {
-            const response = await fetch(GOOGLE_SHEETS_URL, {
+            await fetch(GOOGLE_SHEETS_URL, {
                 method: 'POST',
                 mode: 'no-cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    resposta: resposta,
-                    mensagem: mensagem,
-                    timestamp: new Date().toISOString()
-                })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ resposta: resposta, mensagem: mensagem, timestamp: new Date().toISOString() })
             });
-            console.log(`✅ Resposta "${resposta}" enviada para a planilha!`);
+            console.log(`✅ Resposta "${resposta}" enviada!`);
             return true;
         } catch (error) {
-            console.error('❌ Erro ao enviar:', error);
+            console.error('❌ Erro:', error);
             return false;
         }
     }
 
-    // Função para o botão NÃO fugir
     function fugir() {
         btnNao.classList.add('fugindo');
-        
         const maxX = window.innerWidth - btnNao.offsetWidth - 20;
         const maxY = window.innerHeight - btnNao.offsetHeight - 20;
-        
-        const safeMaxX = Math.max(10, maxX);
-        const safeMaxY = Math.max(10, maxY);
-        
-        const randomX = Math.random() * safeMaxX;
-        const randomY = Math.random() * safeMaxY;
-        
-        btnNao.style.left = randomX + 'px';
-        btnNao.style.top = randomY + 'px';
-        
+        btnNao.style.left = Math.random() * Math.max(10, maxX) + 'px';
+        btnNao.style.top = Math.random() * Math.max(10, maxY) + 'px';
         btnNao.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            btnNao.style.transform = 'scale(1)';
-        }, 150);
+        setTimeout(() => btnNao.style.transform = 'scale(1)', 150);
     }
 
-    // Botão NÃO: foge ao clicar (funciona no celular também)
-    btnNao.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        fugir();
-    });
+    btnNao.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); fugir(); });
+    btnNao.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); fugir(); });
 
-    btnNao.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        fugir();
-    });
-
-    // ========== BOTÃO SIM: CELEBRAÇÃO + ENVIO PARA PLANILHA ==========
     function criarCoracao() {
         const heart = document.createElement('div');
         heart.classList.add('heart');
@@ -318,7 +287,6 @@
         foguete.innerHTML = '🚀';
         foguete.style.left = Math.random() * (window.innerWidth - 50) + 'px';
         document.body.appendChild(foguete);
-
         setTimeout(() => {
             foguete.remove();
             const explosao = document.createElement('div');
@@ -328,69 +296,35 @@
             explosao.style.bottom = 'calc(100vh - 50px)';
             document.body.appendChild(explosao);
             setTimeout(() => explosao.remove(), 500);
-
-            for (let i = 0; i < 30; i++) {
-                setTimeout(() => criarCoracao(), i * 20);
-            }
+            for (let i = 0; i < 30; i++) setTimeout(() => criarCoracao(), i * 20);
         }, 1400);
     }
 
     async function celebrar() {
-        // Mostra mensagem de loading
-        mensagemDiv.innerHTML = '<div class="mensagem-sucesso">🎉 AGORA É OFICIAL! TE AMO! 🎉<br>💑 Estamos namorando! 💑<br><small style="font-size: 12px;">📝 Registrando sua resposta...</small></div>';
-        
-        // Envia para o Google Sheets
-        const enviado = await enviarResposta("SIM", "Aceitou o pedido de namoro com foguetes e confetes! 🚀💖");
-        
-        if (enviado) {
-            mensagemDiv.innerHTML = '<div class="mensagem-sucesso">🎉 AGORA É OFICIAL! TE AMO! 🎉<br>💑 Estamos namorando! 💑<br><small style="font-size: 12px;">✅ Resposta registrada com sucesso! 💌</small></div>';
-        } else {
-            mensagemDiv.innerHTML = '<div class="mensagem-sucesso">🎉 AGORA É OFICIAL! TE AMO! 🎉<br>💑 Estamos namorando! 💑<br><small style="font-size: 12px;">⚠️ Resposta salva localmente (sem internet)</small></div>';
-        }
-        
-        // Esconde o botão NÃO
+        mensagemDiv.innerHTML = '<div class="mensagem-sucesso">🎉 AGORA É OFICIAL! TE AMO! 🎉<br>💑 Estamos namorando! 💑<br><small>📝 Registrando...</small></div>';
+        const enviado = await enviarResposta("SIM", "Aceitou o pedido de namoro! 🚀💖");
+        mensagemDiv.innerHTML = `<div class="mensagem-sucesso">🎉 AGORA É OFICIAL! TE AMO! 🎉<br>💑 Estamos namorando! 💑<br><small>${enviado ? '✅ Resposta registrada!' : '⚠️ Resposta salva localmente'}</small></div>`;
         btnNao.style.display = 'none';
-        
-        // Muda o botão SIM
         btnSim.innerHTML = '✅ JUNTOS! ✅';
         btnSim.disabled = true;
         btnSim.style.opacity = '0.7';
-        btnSim.style.cursor = 'default';
-
-        // Animações
-        for (let i = 0; i < 60; i++) {
-            setTimeout(() => criarCoracao(), i * 50);
-        }
+        for (let i = 0; i < 60; i++) setTimeout(() => criarCoracao(), i * 50);
         setTimeout(() => criarConfete(), 300);
-        for (let i = 0; i < 8; i++) {
-            setTimeout(() => criarFoguete(), 800 + i * 400);
-        }
+        for (let i = 0; i < 8; i++) setTimeout(() => criarFoguete(), 800 + i * 400);
     }
 
-    btnSim.addEventListener('click', (e) => {
-        celebrar();
-    });
-    
-    btnSim.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        celebrar();
-    });
+    btnSim.addEventListener('click', () => celebrar());
+    btnSim.addEventListener('touchstart', (e) => { e.preventDefault(); celebrar(); });
 
-    // Ajuste para redimensionamento da tela
     window.addEventListener('resize', () => {
         if (btnNao.classList.contains('fugindo') && btnNao.style.display !== 'none') {
             const maxX = window.innerWidth - btnNao.offsetWidth - 20;
             const maxY = window.innerHeight - btnNao.offsetHeight - 20;
-            let left = parseFloat(btnNao.style.left);
-            let top = parseFloat(btnNao.style.top);
+            let left = parseFloat(btnNao.style.left), top = parseFloat(btnNao.style.top);
             if (isNaN(left)) left = 50;
             if (isNaN(top)) top = 50;
-            if (left > maxX) left = maxX;
-            if (top > maxY) top = maxY;
-            if (left < 10) left = 10;
-            if (top < 10) top = 10;
-            btnNao.style.left = left + 'px';
-            btnNao.style.top = top + 'px';
+            btnNao.style.left = Math.min(maxX, Math.max(10, left)) + 'px';
+            btnNao.style.top = Math.min(maxY, Math.max(10, top)) + 'px';
         }
     });
 </script>
