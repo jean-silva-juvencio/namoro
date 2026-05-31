@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Pedido de Namoro Especial 💖</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 40px 30px;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 90%;
+            z-index: 10;
+        }
+
+        h1 {
+            color: #ff4d6d;
+            font-size: 2.2em;
+            margin-bottom: 20px;
+        }
+
+        .pergunta {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .emoji-grande {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .botoes {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        button {
+            font-size: 24px;
+            padding: 15px 35px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.1s ease;
+            touch-action: manipulation;
+        }
+
+        #btnSim {
+            background-color: #ff4d6d;
+            color: white;
+            box-shadow: 0 5px 15px rgba(255,77,109,0.4);
+        }
+
+        #btnSim:active {
+            transform: scale(0.95);
+        }
+
+        #btnNao {
+            background-color: #6c757d;
+            color: white;
+            position: static;
+            transition: none;
+        }
+
+        #btnNao.fugindo {
+            position: fixed;
+            transition: left 0.15s ease, top 0.15s ease;
+            z-index: 100;
+        }
+
+        .mensagem-sucesso {
+            margin-top: 30px;
+            font-size: 1.3em;
+            color: #28a745;
+            font-weight: bold;
+            animation: pulse 0.5s ease;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .heart {
+            position: fixed;
+            font-size: 24px;
+            pointer-events: none;
+            animation: floatUp 3s ease-out forwards;
+            z-index: 1000;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) scale(0.5);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-20vh) scale(1.5);
+                opacity: 0;
+            }
+        }
+
+        .confete {
+            position: fixed;
+            width: 10px;
+            height: 20px;
+            top: -20px;
+            pointer-events: none;
+            animation: cair 3s linear forwards;
+            z-index: 999;
+        }
+
+        @keyframes cair {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        .foguete {
+            position: fixed;
+            bottom: 0;
+            font-size: 30px;
+            pointer-events: none;
+            z-index: 1000;
+            animation: sobeFoguete 1.5s ease-out forwards;
+        }
+
+        @keyframes sobeFoguete {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(20deg);
+                opacity: 0;
+            }
+        }
+
+        .explosao {
+            position: fixed;
+            font-size: 40px;
+            pointer-events: none;
+            z-index: 1001;
+            animation: boom 0.5s ease-out forwards;
+        }
+
+        @keyframes boom {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(3);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 550px) {
+            .container {
+                padding: 25px;
+            }
+            h1 {
+                font-size: 1.6em;
+            }
+            button {
+                font-size: 20px;
+                padding: 12px 25px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="cardContainer">
+    <div class="emoji-grande">🥰</div>
+    <h1>Oi, pessoa especial!</h1>
+    <div class="pergunta">
+        💕 Quer namorar comigo? 💕
+    </div>
+    <div class="botoes">
+        <button id="btnSim">SIM 😍</button>
+        <button id="btnNao">NÃO 🥺</button>
+    </div>
+    <div id="mensagemFinal" style="margin-top: 20px;"></div>
+</div>
+
+<script>
+    // 🔴 ATENÇÃO: Depois de implantar o Apps Script, cole a URL aqui 🔴
+    // Exemplo: const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbxxxx/exec";
+    const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/SEU_ID_AQUI/exec";
+    
+    const btnSim = document.getElementById('btnSim');
+    const btnNao = document.getElementById('btnNao');
+    const mensagemDiv = document.getElementById('mensagemFinal');
+
+    // Função para enviar resposta ao Google Sheets
+    async function enviarResposta(resposta, mensagem) {
+        try {
+            const response = await fetch(GOOGLE_SHEETS_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    resposta: resposta,
+                    mensagem: mensagem,
+                    timestamp: new Date().toISOString()
+                })
+            });
+            console.log(`✅ Resposta "${resposta}" enviada para a planilha!`);
+            return true;
+        } catch (error) {
+            console.error('❌ Erro ao enviar:', error);
+            return false;
+        }
+    }
+
+    // Função para o botão NÃO fugir
+    function fugir() {
+        btnNao.classList.add('fugindo');
+        
+        const maxX = window.innerWidth - btnNao.offsetWidth - 20;
+        const maxY = window.innerHeight - btnNao.offsetHeight - 20;
+        
+        const safeMaxX = Math.max(10, maxX);
+        const safeMaxY = Math.max(10, maxY);
+        
+        const randomX = Math.random() * safeMaxX;
+        const randomY = Math.random() * safeMaxY;
+        
+        btnNao.style.left = randomX + 'px';
+        btnNao.style.top = randomY + 'px';
+        
+        btnNao.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            btnNao.style.transform = 'scale(1)';
+        }, 150);
+    }
+
+    // Botão NÃO: foge ao clicar (funciona no celular também)
+    btnNao.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fugir();
+    });
+
+    btnNao.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        fugir();
+    });
+
+    // ========== BOTÃO SIM: CELEBRAÇÃO + ENVIO PARA PLANILHA ==========
+    function criarCoracao() {
+        const heart = document.createElement('div');
+        heart.classList.add('heart');
+        heart.innerHTML = ['❤️', '💖', '💗', '💓', '💕', '💘', '💝'][Math.floor(Math.random() * 7)];
+        heart.style.left = Math.random() * window.innerWidth + 'px';
+        heart.style.animationDuration = 2 + Math.random() * 2 + 's';
+        heart.style.fontSize = 20 + Math.random() * 30 + 'px';
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 3000);
+    }
+
+    function criarConfete() {
+        for (let i = 0; i < 150; i++) {
+            setTimeout(() => {
+                const confete = document.createElement('div');
+                confete.classList.add('confete');
+                const cores = ['#ff4d6d', '#ff6b4a', '#ff8c42', '#ffd166', '#06d6a0', '#118ab2', '#ef476f'];
+                confete.style.backgroundColor = cores[Math.floor(Math.random() * cores.length)];
+                confete.style.left = Math.random() * window.innerWidth + 'px';
+                confete.style.width = 8 + Math.random() * 12 + 'px';
+                confete.style.height = 12 + Math.random() * 18 + 'px';
+                confete.style.animationDuration = 2 + Math.random() * 2 + 's';
+                document.body.appendChild(confete);
+                setTimeout(() => confete.remove(), 3000);
+            }, i * 15);
+        }
+    }
+
+    function criarFoguete() {
+        const foguete = document.createElement('div');
+        foguete.classList.add('foguete');
+        foguete.innerHTML = '🚀';
+        foguete.style.left = Math.random() * (window.innerWidth - 50) + 'px';
+        document.body.appendChild(foguete);
+
+        setTimeout(() => {
+            foguete.remove();
+            const explosao = document.createElement('div');
+            explosao.classList.add('explosao');
+            explosao.innerHTML = '💥✨🎆';
+            explosao.style.left = foguete.style.left;
+            explosao.style.bottom = 'calc(100vh - 50px)';
+            document.body.appendChild(explosao);
+            setTimeout(() => explosao.remove(), 500);
+
+            for (let i = 0; i < 30; i++) {
+                setTimeout(() => criarCoracao(), i * 20);
+            }
+        }, 1400);
+    }
+
+    async function celebrar() {
+        // Mostra mensagem de loading
+        mensagemDiv.innerHTML = '<div class="mensagem-sucesso">🎉 AGORA É OFICIAL! TE AMO! 🎉<br>💑 Estamos namorando! 💑<br><small style="font-size: 12px;">📝 Registrando sua resposta...</small></div>';
+        
+        // Envia para o Google Sheets
+        const enviado = await enviarResposta("SIM", "Aceitou o pedido de namoro com foguetes e confetes! 🚀💖");
+        
+        if (enviado) {
+            mensagemDiv.innerHTML = '<div class="mensagem-sucesso">🎉 AGORA É OFICIAL! TE AMO! 🎉<br>💑 Estamos namorando! 💑<br><small style="font-size: 12px;">✅ Resposta registrada com sucesso! 💌</small></div>';
+        } else {
+            mensagemDiv.innerHTML = '<div class="mensagem-sucesso">🎉 AGORA É OFICIAL! TE AMO! 🎉<br>💑 Estamos namorando! 💑<br><small style="font-size: 12px;">⚠️ Resposta salva localmente (sem internet)</small></div>';
+        }
+        
+        // Esconde o botão NÃO
+        btnNao.style.display = 'none';
+        
+        // Muda o botão SIM
+        btnSim.innerHTML = '✅ JUNTOS! ✅';
+        btnSim.disabled = true;
+        btnSim.style.opacity = '0.7';
+        btnSim.style.cursor = 'default';
+
+        // Animações
+        for (let i = 0; i < 60; i++) {
+            setTimeout(() => criarCoracao(), i * 50);
+        }
+        setTimeout(() => criarConfete(), 300);
+        for (let i = 0; i < 8; i++) {
+            setTimeout(() => criarFoguete(), 800 + i * 400);
+        }
+    }
+
+    btnSim.addEventListener('click', (e) => {
+        celebrar();
+    });
+    
+    btnSim.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        celebrar();
+    });
+
+    // Ajuste para redimensionamento da tela
+    window.addEventListener('resize', () => {
+        if (btnNao.classList.contains('fugindo') && btnNao.style.display !== 'none') {
+            const maxX = window.innerWidth - btnNao.offsetWidth - 20;
+            const maxY = window.innerHeight - btnNao.offsetHeight - 20;
+            let left = parseFloat(btnNao.style.left);
+            let top = parseFloat(btnNao.style.top);
+            if (isNaN(left)) left = 50;
+            if (isNaN(top)) top = 50;
+            if (left > maxX) left = maxX;
+            if (top > maxY) top = maxY;
+            if (left < 10) left = 10;
+            if (top < 10) top = 10;
+            btnNao.style.left = left + 'px';
+            btnNao.style.top = top + 'px';
+        }
+    });
+</script>
+</body>
+</html>
